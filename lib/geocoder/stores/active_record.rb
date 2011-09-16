@@ -12,40 +12,40 @@ module Geocoder::Store
     #
     def self.included(base)
       base.extend ClassMethods
-      base.class_eval do
-
-        # scope: geocoded objects
-        scope :geocoded, lambda {
-          {:conditions => "#{geocoder_options[:latitude]} IS NOT NULL " +
-            "AND #{geocoder_options[:longitude]} IS NOT NULL"}}
-
-        # scope: not-geocoded objects
-        scope :not_geocoded, lambda {
-          {:conditions => "#{geocoder_options[:latitude]} IS NULL " +
-            "OR #{geocoder_options[:longitude]} IS NULL"}}
-
-        ##
-        # Find all objects within a radius of the given location.
-        # Location may be either a string to geocode or an array of
-        # coordinates (<tt>[lat,lon]</tt>). Also takes an options hash
-        # (see Geocoder::Orm::ActiveRecord::ClassMethods.near_scope_options
-        # for details).
-        #
-        scope :near, lambda{ |location, *args|
-          latitude, longitude = Geocoder::Calculations.extract_coordinates(location)
-          if latitude and longitude
-            near_scope_options(latitude, longitude, *args)
-          else
-            where(:id => false) # no results if no lat/lon given
-          end
-        }
-      end
     end
 
     ##
     # Methods which will be class methods of the including class.
     #
     module ClassMethods
+
+      # scope: geocoded objects
+      def geocoded
+        {:conditions => "#{geocoder_options[:latitude]} IS NOT NULL " +
+          "AND #{geocoder_options[:longitude]} IS NOT NULL"}
+      end
+
+      # scope: not-geocoded objects
+      def not_geocoded
+        {:conditions => "#{geocoder_options[:latitude]} IS NULL " +
+          "OR #{geocoder_options[:longitude]} IS NULL"}
+      end
+
+      ##
+      # Find all objects within a radius of the given location.
+      # Location may be either a string to geocode or an array of
+      # coordinates (<tt>[lat,lon]</tt>). Also takes an options hash
+      # (see Geocoder::Orm::ActiveRecord::ClassMethods.near_scope_options
+      # for details).
+      #
+      def near(location, *args)
+        latitude, longitude = Geocoder::Calculations.extract_coordinates(location)
+        if latitude and longitude
+          near_scope_options(latitude, longitude, *args)
+        else
+          where(:id => false) # no results if no lat/lon given
+        end
+      end
 
       private # ----------------------------------------------------------------
 
